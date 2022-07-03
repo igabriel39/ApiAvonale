@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ApiAvonale.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -10,6 +11,6 @@ namespace ApiAvonale.Controllers
 {
     public class ProdutosController : ApiController
     {
-        public HttpResponseMessage Post()
+        public HttpResponseMessage Post( ParamAdicionar param)
     }
 }
