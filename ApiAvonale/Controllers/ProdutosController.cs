@@ -21,7 +21,7 @@ namespace ApiAvonale.Controllers
         #region Campos
         public enum Campos
         {
-            ID_PRODUTO = 100 // Número do id do produto para fazer a busca detalhada pelo produto, se o número não for passado na requisição então a busca será feita por todos os produtos
+            ID_PRODUTO = 100 // Número do id do produto passado na requisição para rota de buscar produtos ou deletar produtos
         }
         #endregion
 
@@ -59,6 +59,25 @@ namespace ApiAvonale.Controllers
             catch (Exception e)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, e.Message);
+            }
+        }
+
+        // Rota para excluir um produto
+        public HttpResponseMessage Delete()
+        {
+            try
+            {
+                Dictionary<string, string> queryString = Request.GetQueryNameValuePairs().ToDictionary(x => x.Key, x => x.Value);
+
+                GatewayProdutos.DeleteProduto(queryString, conexao.connectionString);
+                return Request.CreateResponse(HttpStatusCode.OK, "Produto excluído com sucesso");
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Split(':')[0].Contains("Consulta"))
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, e.Message.Split(':')[1]);
+                else
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, e.Message);
             }
         }
     }

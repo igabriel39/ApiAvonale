@@ -14,7 +14,7 @@ namespace ApiAvonale.Negocios
         #region Campos
         public enum Campos
         {
-            ID_PRODUTO = 100 // Número do id do produto para fazer a busca detalhada pelo produto, se o número não for passado na requisição então a busca será feita por todos os produtos
+            ID_PRODUTO = 100 // Número do id do produto passado na requisição para rota de buscar produtos ou deletar produtos
         }
         #endregion
 
@@ -47,10 +47,10 @@ namespace ApiAvonale.Negocios
 
         public List<Retorno> Get(Dictionary<string, string> queryString, string connectionString)
         {
+            SqlConnection conn = new SqlConnection(connectionString);
+
             string outValue = null;
             int idProduto = 0;
-
-            SqlConnection conn = new SqlConnection(connectionString);
 
             if (queryString.TryGetValue("" + (int)Campos.ID_PRODUTO, out outValue))
                 idProduto = Int32.Parse(queryString["" + (int)Campos.ID_PRODUTO]);
@@ -76,13 +76,48 @@ namespace ApiAvonale.Negocios
             }
         }
 
+        public static void DeleteProduto(Dictionary<string, string> queryString, string connectionString)
+        {
+            SqlConnection conn = new SqlConnection(connectionString);
+
+            string outValue = null;
+            int idProduto = 0;
+
+            if (!queryString.TryGetValue("" + (int)Campos.ID_PRODUTO, out outValue))
+                throw new Exception("Id do produto que será deletado deve ser informado!");
+
+            idProduto = idProduto = Int32.Parse(queryString["" + (int)Campos.ID_PRODUTO]);
+
+            try
+            {
+                conn.Open();
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Falha ao criar conexão com o Banco de Dados: " + e.Message);
+            }
+
+            try
+            {
+                // Verifica se o existe um produto com o id passado na requisição
+                List<Retorno> produto = ListarProdutos(idProduto, conn);
+
+                ExcluirProduto(idProduto, conn);
+            }
+            catch (Exception e)
+            {
+                conn.Close();
+                throw new Exception(e.Message);
+            }
+        }
+
         #region Inserir Produto
         private static void InserirProduto(ParamAdicionar param, SqlConnection conn)
         {
             try
             {
                 #region script
-                string scriptInsert = @"INSERT INTO dbo.Produtos (nmProduto, vlUnitario, qtEstoque) VALUES (@nmProduto, @vlProduto, @qtProduto)";
+                string scriptInsert = @"INSERT INTO dbo.Produtos (nmProduto, vlUnitario, qtEstoque, dtUltimaVenda, vlUltimaVenda) VALUES (@nmProduto, @vlProduto, @qtProduto, NULL, NULL)";
                 #endregion
 
                 SqlCommand command = new SqlCommand(scriptInsert, conn);
@@ -146,6 +181,27 @@ namespace ApiAvonale.Negocios
             }
 
 
+        }
+        #endregion
+
+        #region Excluir Produto
+        private static void ExcluirProduto(int idProduto, SqlConnection conn)
+        {
+            try
+            {
+                #region Script
+                string scriptDelete = @"DELETE FROM dbo.Produtos WHERE idProduto = @idProduto";
+                #endregion
+
+                SqlCommand command = new SqlCommand(scriptDelete, conn);
+
+                command.Parameters.AddWithValue("@idProduto", idProduto);
+                command.ExecuteNonQuery();
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Falha ao excluir produto: " + e.Message);
+            }
         }
         #endregion
     }
