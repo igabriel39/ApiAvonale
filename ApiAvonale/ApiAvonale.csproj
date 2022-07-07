@@ -74,8 +74,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Conexao.cs" />
     <Compile Include="Controllers\ProdutosController.cs" />
     <Compile Include="Models\ParamAdicionar.cs" />
+    <Compile Include="Models\Retorno.cs" />
     <Compile Include="Negocios\GatewayProdutos.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
